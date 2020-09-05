@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const asyncHandler = require('express-async-handler');
 const helmet = require('helmet');
+const { celebrate, Joi, CelebrateError } = require('celebrate');
 
 require('dotenv').config();
 
@@ -32,8 +33,22 @@ app
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
   .use(cookieParser())
-  .post('/signup', asyncHandler(createUser))
-  .post('/signin', asyncHandler(login))
+  .post('/signup', celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().required().min(2).max(30),
+      about: Joi.string().min(2).max(30).required(),
+      password: Joi.string().required(),
+      avatar: Joi.string().uri().required(),
+      email: Joi.string().email().required(),
+    }),
+  }),
+  asyncHandler(createUser))
+  .post('/signin', celebrate({
+    body: Joi.object().keys({
+      password: Joi.string().required(),
+      email: Joi.string().email().required(),
+    }),
+  }), asyncHandler(login))
   .use('/', auth, cards, users) // защищаем авторизацией все API-вызовы (кроме /signin и /signup)
   .use(express.static(path.join(__dirname, 'public'))) // доступ к статическим файлам оставляем открытым, т.к. клиентские js-файлы каким-то образом должны попасть клиенту до аутентификации, чтобы иметь возмодность её выполнить
   .use((err, req, res, next) => { // eslint-disable-line no-unused-vars
@@ -42,9 +57,9 @@ app
       return;
     }
 
-    if (err instanceof mongoose.Error.ValidationError) {
+    if (err instanceof mongoose.Error.ValidationError || err instanceof CelebrateError) {
       console.trace(err); // eslint-disable-line no-console
-      res.status(400).send({ message: 'Введены не все обязательные данные' });
+      res.status(400).send({ message: 'Введены не все обязательные данные', details: [...err.details] });
       return;
     }
 
