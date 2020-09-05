@@ -1,7 +1,7 @@
 {
-  "name": "14sprint",
+  "name": "15sprint",
   "version": "0.0.1",
-  "description": "Проектная работа 14",
+  "description": "Проектная работа 15",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
