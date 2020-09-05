@@ -65,6 +65,7 @@ app
       return;
     }
 
+    // Обрабатывыем ошибки валидации при использовании celebrate и mongoose
     if (err instanceof mongoose.Error.ValidationError || err instanceof CelebrateError) {
       console.trace(err); // eslint-disable-line no-console
       res.status(400).send({ message: 'Введены не все обязательные данные', details: [...err.details] });
