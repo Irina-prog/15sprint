@@ -35,6 +35,11 @@ app
   .use(bodyParser.urlencoded({ extended: true }))
   .use(cookieParser())
   .use(requestLogger)
+  .get('/crash-test', () => {
+    setTimeout(() => {
+      throw new Error('Сервер сейчас упадёт');
+    }, 0);
+  })
   .post('/signup', celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
