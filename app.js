@@ -15,6 +15,7 @@ const {
   createUser, login,
 } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000, DATABASE_URL = 'mongodb://localhost/mestodb' } = process.env;
 
@@ -33,6 +34,7 @@ app
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
   .use(cookieParser())
+  .use(requestLogger)
   .post('/signup', celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
@@ -51,6 +53,7 @@ app
   }), asyncHandler(login))
   .use('/', auth, cards, users) // защищаем авторизацией все API-вызовы (кроме /signin и /signup)
   .use(express.static(path.join(__dirname, 'public'))) // доступ к статическим файлам оставляем открытым, т.к. клиентские js-файлы каким-то образом должны попасть клиенту до аутентификации, чтобы иметь возмодность её выполнить
+  .use(errorLogger)
   .use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
       notFoundHandler(res);

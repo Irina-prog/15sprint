@@ -33,11 +33,13 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
+    "express-winston": "^4.0.5",
     "helmet": "^4.1.0",
     "joi": "^17.2.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.27",
     "mongoose-type-email": "^1.0.12",
-    "mongoose-type-url": "^2.0.0"
+    "mongoose-type-url": "^2.0.0",
+    "winston": "^3.3.3"
   }
 }
