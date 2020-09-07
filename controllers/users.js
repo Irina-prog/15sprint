@@ -14,12 +14,21 @@ async function getUser(req, res) {
 }
 
 async function createUser(req, res) {
-  const { password, ...data } = req.body;
-  const user = new User(data); // Модели mongoose умеют сами отфильтровывать "лишние" поля.
-  // Так если в req.body передать не объявленное поле, то оно не будет сохранено в БД
-  await user.setPassword(password);
-  await user.save();
-  res.send(user);
+  try {
+    const { password, ...data } = req.body;
+    const user = new User(data); // Модели mongoose умеют сами отфильтровывать "лишние" поля.
+    // Так если в req.body передать не объявленное поле, то оно не будет сохранено в БД
+    await user.setPassword(password);
+    await user.save();
+    res.send(user);
+  } catch (err) {
+    if (err.name === 'MongoError' && err.code === 11000) {
+      res.status(409).send({ message: 'Такой пользователь уже зарегистрирован' });
+      return;
+    }
+
+    throw err;
+  }
 }
 
 async function updateUser(req, res) {
