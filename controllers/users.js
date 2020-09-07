@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const HttpError = require('../lib/http-error');
-
-const { JWT_SECRET } = process.env;
+const jwtSecret = require('../lib/jwt-secret');
 
 async function listUsers(req, res) {
   const users = await User.find({});
@@ -62,7 +61,7 @@ async function login(req, res) {
     if (!matched) {
       throw new Error();
     }
-    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user._id }, jwtSecret, { expiresIn: '7d' });
     res.cookie('token', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true });
     res.send({});
   } catch {
