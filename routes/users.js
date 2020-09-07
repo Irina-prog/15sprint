@@ -4,6 +4,7 @@ const { celebrate, Joi } = require('celebrate');
 const {
   listUsers, getUser, updateUser, updateAvatar,
 } = require('../controllers/users');
+const urlValidator = require('../lib/url-validator');
 
 const router = new Router();
 
@@ -18,7 +19,7 @@ router.patch('/users/me', celebrate({
 }), asyncHandler(updateUser));
 router.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().uri(),
+    avatar: Joi.string().custom(urlValidator).required(),
   }),
 }), asyncHandler(updateAvatar));
 

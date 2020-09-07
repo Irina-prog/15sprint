@@ -16,6 +16,7 @@ const {
 } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const urlValidator = require('./lib/url-validator');
 
 const { PORT = 3000, DATABASE_URL = 'mongodb://localhost/mestodb' } = process.env;
 
@@ -45,7 +46,7 @@ app
       name: Joi.string().required().min(2).max(30),
       about: Joi.string().min(2).max(30).required(),
       password: Joi.string().required(),
-      avatar: Joi.string().uri().required(),
+      avatar: Joi.string().custom(urlValidator).required(),
       email: Joi.string().email().required(),
     }),
   }),
@@ -57,7 +58,7 @@ app
     }),
   }), asyncHandler(login))
   .use('/', auth, cards, users) // защищаем авторизацией все API-вызовы (кроме /signin и /signup)
-  .use(express.static(path.join(__dirname, 'public'))) // доступ к статическим файлам оставляем открытым, т.к. клиентские js-файлы каким-то образом должны попасть клиенту до аутентификации, чтобы иметь возмодность её выполнить
+  .use(express.static(path.join(__dirname, 'public'))) // доступ к статическим файлам оставляем открытым, т.к. клиентские js-файлы каким-то образом должны попасть клиенту до аутентификации, чтобы иметь возможность её выполнить
   .use(errorLogger)
   .use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
@@ -67,8 +68,9 @@ app
 
     // Обрабатывыем ошибки валидации при использовании celebrate и mongoose
     if (err instanceof mongoose.Error.ValidationError || err instanceof CelebrateError) {
+      const { details = [] } = err;
       console.trace(err); // eslint-disable-line no-console
-      res.status(400).send({ message: 'Введены не все обязательные данные', details: [...err.details] });
+      res.status(400).send({ message: 'Введены не все обязательные данные', details: [...details] });
       return;
     }
 
