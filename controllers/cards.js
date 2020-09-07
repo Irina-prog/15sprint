@@ -1,5 +1,6 @@
 const Card = require('../models/card');
 const User = require('../models/user');
+const HttpError = require('../lib/http-error');
 
 // To Reviewer: ошибки обрабатываются в app.js
 
@@ -11,8 +12,7 @@ async function listCards(req, res) {
 async function deleteCard(req, res) {
   const card = await Card.findById(req.params.id, { owner: 1 }).orFail();
   if (card.owner.toString() !== req.user._id) {
-    res.status(403).send({ message: 'Запрещено удалять карточку, созданную другим пользователем' });
-    return;
+    throw new HttpError(403, 'Запрещено удалять карточку, созданную другим пользователем');
   }
 
   await card.remove();

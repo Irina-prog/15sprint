@@ -17,6 +17,7 @@ const {
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const urlValidator = require('./lib/url-validator');
+const HttpError = require('./lib/http-error');
 
 const { PORT = 3000, DATABASE_URL = 'mongodb://localhost/mestodb' } = process.env;
 
@@ -61,6 +62,11 @@ app
   .use(express.static(path.join(__dirname, 'public'))) // доступ к статическим файлам оставляем открытым, т.к. клиентские js-файлы каким-то образом должны попасть клиенту до аутентификации, чтобы иметь возможность её выполнить
   .use(errorLogger)
   .use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+    if (err instanceof HttpError) {
+      res.status(err.status || 500).send({ message: err.message });
+      return;
+    }
+
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
       notFoundHandler(res);
       return;
@@ -69,13 +75,11 @@ app
     // Обрабатывыем ошибки валидации при использовании celebrate и mongoose
     if (err instanceof mongoose.Error.ValidationError || err instanceof CelebrateError) {
       const { details = [] } = err;
-      console.trace(err); // eslint-disable-line no-console
       res.status(400).send({ message: 'Введены не все обязательные данные', details: [...details] });
       return;
     }
 
-    console.trace(err); // eslint-disable-line no-console
-    res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    res.status(500).send({ message: 'Произошла ошибка на сервере' }); // Пользователем незачем знать детали об необработанной ошибке
   })
   .use((req, res) => {
     notFoundHandler(res);

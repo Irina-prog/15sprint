@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const HttpError = require('../lib/http-error');
 
 const { JWT_SECRET } = process.env;
 
@@ -8,6 +9,6 @@ module.exports = (req, res, next) => {
     req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch {
-    res.status(401).send({ message: 'Требуется авторизация' });
+    throw new HttpError(401, 'Требуется авторизация');
   }
 };

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const HttpError = require('../lib/http-error');
 
 const { JWT_SECRET } = process.env;
 
@@ -23,8 +24,7 @@ async function createUser(req, res) {
     res.send(user);
   } catch (err) {
     if (err.name === 'MongoError' && err.code === 11000) {
-      res.status(409).send({ message: 'Такой пользователь уже зарегистрирован' });
-      return;
+      throw new HttpError(409, 'Такой пользователь уже зарегистрирован');
     }
 
     throw err;
@@ -66,7 +66,7 @@ async function login(req, res) {
     res.cookie('token', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true });
     res.send({});
   } catch {
-    res.status(401).send({ message: 'Логин и/или пароль не верны' });
+    throw new HttpError(401, 'Логин и/или пароль не верны');
   }
 }
 
