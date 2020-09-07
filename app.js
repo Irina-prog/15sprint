@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -59,7 +58,6 @@ app
     }),
   }), asyncHandler(login))
   .use('/', auth, cards, users) // защищаем авторизацией все API-вызовы (кроме /signin и /signup)
-  .use(express.static(path.join(__dirname, 'public'))) // доступ к статическим файлам оставляем открытым, т.к. клиентские js-файлы каким-то образом должны попасть клиенту до аутентификации, чтобы иметь возможность её выполнить
   .use(errorLogger)
   .use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     if (err instanceof HttpError) {
@@ -84,4 +82,6 @@ app
   .use((req, res) => {
     notFoundHandler(res);
   });
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`Started on the port ${PORT}`); // eslint-disable-line no-console
+});
