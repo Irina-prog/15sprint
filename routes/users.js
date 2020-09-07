@@ -9,7 +9,11 @@ const urlValidator = require('../lib/url-validator');
 const router = new Router();
 
 router.get('/users', asyncHandler(listUsers));
-router.get('/users/:id', asyncHandler(getUser));
+router.get('/users/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24),
+  }),
+}), asyncHandler(getUser));
 router.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),

@@ -15,8 +15,20 @@ router.post('/cards', celebrate({
     link: Joi.string().custom(urlValidator).required(),
   }),
 }), asyncHandler(createCard));
-router.delete('/cards/:id', asyncHandler(deleteCard));
-router.put('/cards/:id/likes', asyncHandler(addLike));
-router.delete('/cards/:id/likes', asyncHandler(removeLike));
+router.delete('/cards/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24),
+  }),
+}), asyncHandler(deleteCard));
+router.put('/cards/:id/likes', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24),
+  }),
+}), asyncHandler(addLike));
+router.delete('/cards/:id/likes', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24),
+  }),
+}), asyncHandler(removeLike));
 
 module.exports = router;
